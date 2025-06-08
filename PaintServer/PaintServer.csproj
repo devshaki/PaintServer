@@ -55,7 +55,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Program.cs" />
     <Compile Include="Server\ClientManager.cs" />
     <Compile Include="Server\ClientSession.cs" />
     <Compile Include="Server\Server.cs" />

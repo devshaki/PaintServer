@@ -60,13 +60,13 @@ namespace PaintServer.Server
             NetworkStream ns = client.GetStream();
             while (client.Connected && !cancellationTokenSource.Token.IsCancellationRequested)
             {
-                byte[] fileBytes = new byte[fileSize];
+                byte[] fileData= new byte[fileSize];
                 int totalRead = 0;
 
                 while (totalRead < fileSize)
                 {
-                    byte[] message = new byte[2048];
-                    int bytesRead = await ns.ReadAsync(message, 0, message.Length);
+                    int bytesRead = await ns.ReadAsync(fileData, totalRead, fileSize - totalRead);
+                    totalRead += bytesRead;
                 }
             }
 
