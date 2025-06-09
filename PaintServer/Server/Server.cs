@@ -20,7 +20,7 @@ namespace PaintServer.Server
 
         public bool IsRunning { get; private set; }
 
-        public Server(int port,string dbDirectory)
+        public Server(int port)
         {
             this.port = port;
         }

@@ -83,5 +83,6 @@ namespace PaintServer.FileSystem
             UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set("lockedBy", clientId);
             lockedCollection.UpdateOne(filter, update);
         }
+
     }
 }

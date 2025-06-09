@@ -62,6 +62,7 @@ namespace PaintServer.Server
                 else if (messageString.StartsWith("get:"))
                 {
                     string fileName = messageString.Split(':')[1];
+                    await SendFile(fileName, clientId);
                 }
 
                 else if (messageString.StartsWith("close:"))
