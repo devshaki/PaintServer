@@ -45,6 +45,7 @@ namespace PaintServer.Server
 
             cancellationTokenSource.Cancel();
             listener.Stop();
+            await clientManager.SuspandClients();
 
             Console.WriteLine("server is now suspended");
         }
