@@ -36,6 +36,8 @@ namespace PaintServer.Server
 
             IsRunning = true;
 
+            Task.Run(() => AcceptClients());
+
             Console.WriteLine($"server is now running on port {port}");
         }
 
