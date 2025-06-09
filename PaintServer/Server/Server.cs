@@ -14,7 +14,6 @@ namespace PaintServer.Server
     class Server
     {
         private readonly int port;
-        private readonly string dbDirectory;
         private TcpListener listener;
         private CancellationTokenSource cancellationTokenSource;
         private ClientManager clientManager;
@@ -24,7 +23,6 @@ namespace PaintServer.Server
         public Server(int port,string dbDirectory)
         {
             this.port = port;
-            this.dbDirectory = dbDirectory;
         }
 
         public async Task Start()
