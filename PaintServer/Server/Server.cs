@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
-
+using PaintServer.Server;
 
 namespace PaintServer.Server
 {
@@ -17,6 +17,7 @@ namespace PaintServer.Server
         private readonly string dbDirectory;
         private TcpListener listener;
         private CancellationTokenSource cancellationTokenSource;
+        private ClientManager clientManager;
 
         public bool IsRunning { get; private set; }
 
@@ -30,6 +31,7 @@ namespace PaintServer.Server
         {
             if (IsRunning) { return; }
 
+            clientManager = ClientManager.GetClientManager();
             cancellationTokenSource = new CancellationTokenSource();
             listener = new TcpListener(IPAddress.Any,port);
             listener.Start();
@@ -54,6 +56,7 @@ namespace PaintServer.Server
             while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
                 TcpClient client = await listener.AcceptTcpClientAsync();
+                await clientManager.AddClient(client);
 
             }
         }
