@@ -165,7 +165,7 @@
     <Compile Include="FileSystem\MongoStorage.cs" />
     <Compile Include="Server\ClientManager.cs" />
     <Compile Include="Server\ClientSession.cs" />
-    <Compile Include="Server\Server.cs" />
+    <Compile Include="Server\FileServer.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

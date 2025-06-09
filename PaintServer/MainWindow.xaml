@@ -9,7 +9,18 @@
     <Grid>
         <Label Content="שרת סקיצות" HorizontalAlignment="Left" Margin="359,10,0,0" VerticalAlignment="Top" Height="50" Width="130" FontSize="20" BorderThickness="0" FontWeight="Bold"/>
         <Label Content=":קבצי סקיצה שמורים" HorizontalAlignment="Left" Margin="597,59,0,0" VerticalAlignment="Top" Width="185" FontSize="18" FontWeight="Bold"/>
-        <Button Content="Suspend" HorizontalAlignment="Left" Margin="359,316,0,0" VerticalAlignment="Top" Width="100" Height="40"/>
+        <Button Content="Suspend" HorizontalAlignment="Left" Margin="359,347,0,0" VerticalAlignment="Top" Width="100" Height="40" Click="SuspendButtonOnClick"/>
+        <ListBox x:Name="Filelist" HorizontalAlignment="right" Height="244" Margin="10,98,0,0" VerticalAlignment="Top" Width="772" FlowDirection="RightToLeft">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Black" BorderThickness="1" Background="#585759">
+                        <TextBlock Text="{Binding}" FontSize="20" Foreground="MintCream"/>
+                    </Border>
+
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
 
     </Grid>
 </Window>

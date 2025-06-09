@@ -83,6 +83,22 @@ namespace PaintServer.FileSystem
             UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set("lockedBy", clientId);
             lockedCollection.UpdateOne(filter, update);
         }
+        public List<string> GetAllFileNames()
+        {
+            ProjectionDefinition<BsonDocument> projection = Builders<BsonDocument>.Projection.Include("fileName").Exclude("_id");
+            List<BsonDocument> docs = schamsCollection.Find(new BsonDocument()).Project(projection).ToList();
+
+            List<string> fileNames = new List<string>();
+            foreach (BsonDocument doc in docs)
+            {
+                if (doc.Contains("fileName"))
+                {
+                    fileNames.Add(doc["fileName"].AsString);
+                }
+            }
+
+            return fileNames;
+        }
 
     }
 }

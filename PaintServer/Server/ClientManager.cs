@@ -35,15 +35,12 @@ namespace PaintServer.Server
             await clientSession.Start();
         }
 
-        public async Task SuspandClients()
+        public void SuspandClients()
         {
-            List<Task> tasks = new List<Task>(); 
             foreach (ClientSession client in clients)
             {
-                tasks.Add(client.Stop());
+                client.Stop();
             }
-
-            await Task.WhenAll(tasks);
         }
         private void AddClientToList(ClientSession clientSession)
         {

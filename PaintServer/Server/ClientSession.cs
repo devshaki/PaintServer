@@ -13,7 +13,8 @@ namespace PaintServer.Server
 {
     class ClientSession
     {
-        public TcpClient client;
+        private int maxHeaderSize = 100;
+        private TcpClient client;
         private CancellationTokenSource cancellationTokenSource;
         public string clientId { get; private set; }
         private FileManager fileManager;
@@ -24,7 +25,7 @@ namespace PaintServer.Server
         {
             this.client = client;
             this.clientId = Guid.NewGuid().ToString();
-            fileManager = FileManager.getFileManager();
+            fileManager = FileManager.GetFileManager();
         }
 
         public async Task Start()
@@ -34,7 +35,7 @@ namespace PaintServer.Server
             await ReceiveMessages(cancellationTokenSource);
         }
 
-        public async Task Stop()
+        public void Stop()
         {
             client.Close();
             cancellationTokenSource.Cancel();
@@ -46,30 +47,43 @@ namespace PaintServer.Server
 
             while (client.Connected && !cancellationTokenSource.Token.IsCancellationRequested)
             {
-                byte[] message = new byte[100];
+                byte[] message = new byte[maxHeaderSize];
                 int bytesRead = await ns.ReadAsync(message, 0, message.Length);
-                string messageString = Encoding.UTF8.GetString(message, 0, bytesRead);
-                
-                if (messageString.StartsWith("upload:"))
+                try
                 {
+                    string messageString = Encoding.UTF8.GetString(message, 0, bytesRead);
                     String[] metaData = messageString.Split(':');
-                    String filename = metaData[1];
-                    int filesize = int.Parse(metaData[2]);
-                    await ReceiveFile(filesize, filename, cancellationTokenSource);
 
+                    switch (metaData[0])
+                    {
+                        case "upload":
+                        {
 
+                            String filename = metaData[1];
+                            int filesize = int.Parse(metaData[2]);
+                            await ReceiveFile(filesize, filename, cancellationTokenSource);
+                                break;
+                        }
+                        case "get":
+                        {
+                            string fileName = messageString.Split(':')[1];
+                            await SendFile(fileName, clientId);
+                                break;
+                        }
+                        case "close:":
+                        {
+
+                            string fileName = messageString.Split(':')[1];
+                            fileManager.CloseFile(fileName, clientId);
+                                break;
+                        }
+                    }
                 }
-                else if (messageString.StartsWith("get:"))
+                catch
                 {
-                    string fileName = messageString.Split(':')[1];
-                    await SendFile(fileName, clientId);
+                    Console.WriteLine($"message decode failed");
                 }
-
-                else if (messageString.StartsWith("close:"))
-                {
-                    string fileName = messageString.Split(':')[1];
-                    fileManager.closeFile(fileName, clientId);
-                }
+                
 
             }
 
@@ -77,7 +91,7 @@ namespace PaintServer.Server
 
         public async Task SendFile(string fileName,string clientId)
         {
-            string jsonData = fileManager.openFile(fileName, clientId);
+            string jsonData = fileManager.OpenFile(fileName, clientId);
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonData);
             int filesize = jsonBytes.Length;
 
@@ -103,9 +117,15 @@ namespace PaintServer.Server
                 int bytesRead = await ns.ReadAsync(fileData, totalRead, fileSize - totalRead);
                 totalRead += bytesRead;
             }
-
-            string jsonData = Encoding.UTF8.GetString(fileData);
-            fileManager.saveFile(filename, jsonData, clientId);
+            try
+            {
+                string jsonData = Encoding.UTF8.GetString(fileData);
+                fileManager.SaveFile(filename, jsonData, clientId);
+            }
+            catch
+            {
+                Console.WriteLine($"message decode failed");
+            }
 
            
 

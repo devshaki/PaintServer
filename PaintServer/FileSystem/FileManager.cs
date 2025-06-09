@@ -10,10 +10,13 @@ namespace PaintServer.FileSystem
     {
         private MongoStorage mongoStorage;
         private static FileManager fileManager;
+        public static Action OnFilesChanged;
+
+
         private FileManager() { mongoStorage = new MongoStorage(); }
 
 
-        public static FileManager getFileManager()
+        public static FileManager GetFileManager()
         {
             if (fileManager == null)
             {
@@ -21,19 +24,33 @@ namespace PaintServer.FileSystem
             }
             return fileManager;
         }
-        public string openFile(string filename,string clientId)
+
+        private void UpdateFileNames()
+        {
+          if (OnFilesChanged != null)
+            {
+                OnFilesChanged.Invoke();
+            }
+        }
+        public string OpenFile(string filename,string clientId)
         {
             return mongoStorage.openFile(filename, clientId);
         }
 
-        public void saveFile(string filename,string jsonData,string clientId) 
+        public void SaveFile(string filename,string jsonData,string clientId) 
         {
             mongoStorage.saveFile(filename, jsonData, clientId);
+            UpdateFileNames();
         }
 
-        public void closeFile(string filename,string clientId)
+        public void CloseFile(string filename,string clientId)
         {
             mongoStorage.closeFile(filename, clientId);
+        }
+
+        public List<string> GetAllFiles()
+        {
+            return mongoStorage.GetAllFileNames();
         }
     }
 }

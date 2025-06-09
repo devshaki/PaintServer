@@ -13,16 +13,39 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using System.Collections.ObjectModel;
+using PaintServer.Server;
+using PaintServer.FileSystem;
 namespace PaintServer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        private FileServer fileServer;
+        private ObservableCollection<string> Filenames { get; } = new ObservableCollection<string>();
         public MainWindow()
         {
             InitializeComponent();
+            FileManager.OnFilesChanged = UpdateFileNames;
+
+
+            fileServer = new FileServer(3333);
+            fileServer.Start();
+        }
+
+        private void SuspendButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            fileServer.Suspend();   
+        }
+
+        private void UpdateFileNames()
+        {
+            FileManager fileManager = FileManager.GetFileManager();
+            List<string> filenames = fileManager.GetAllFiles();
+            Filenames.Clear();
+            foreach(string filename in filenames)
+            {
+                Filenames.Add(filename);
+            }
         }
     }
 }

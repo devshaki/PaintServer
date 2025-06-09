@@ -11,7 +11,7 @@ using PaintServer.Server;
 
 namespace PaintServer.Server
 {
-    class Server
+    class FileServer
     {
         private readonly int port;
         private TcpListener listener;
@@ -20,7 +20,7 @@ namespace PaintServer.Server
 
         public bool IsRunning { get; private set; }
 
-        public Server(int port)
+        public FileServer(int port)
         {
             this.port = port;
         }
@@ -41,13 +41,13 @@ namespace PaintServer.Server
             Console.WriteLine($"server is now running on port {port}");
         }
 
-        public async Task Suspend()
+        public void Suspend()
         {
             if (!IsRunning) { return; }
 
             cancellationTokenSource.Cancel();
             listener.Stop();
-            await clientManager.SuspandClients();
+            clientManager.SuspandClients();
 
             Console.WriteLine("server is now suspended");
         }
