@@ -95,21 +95,19 @@ namespace PaintServer.Server
         public async Task ReceiveFile(int fileSize, string filename,CancellationTokenSource cancellationTokenSource)
         {
             NetworkStream ns = client.GetStream();
-            while (client.Connected && !cancellationTokenSource.Token.IsCancellationRequested)
+            byte[] fileData= new byte[fileSize];
+            int totalRead = 0;
+
+            while (totalRead < fileSize)
             {
-                byte[] fileData= new byte[fileSize];
-                int totalRead = 0;
-
-                while (totalRead < fileSize)
-                {
-                    int bytesRead = await ns.ReadAsync(fileData, totalRead, fileSize - totalRead);
-                    totalRead += bytesRead;
-                }
-
-                string jsonData = Encoding.UTF8.GetString(fileData);
-                fileManager.saveFile(filename, jsonData, clientId);
-
+                int bytesRead = await ns.ReadAsync(fileData, totalRead, fileSize - totalRead);
+                totalRead += bytesRead;
             }
+
+            string jsonData = Encoding.UTF8.GetString(fileData);
+            fileManager.saveFile(filename, jsonData, clientId);
+
+           
 
         }
 
