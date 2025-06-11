@@ -17,7 +17,8 @@ namespace PaintServer.FileSystem
         private IMongoCollection<BsonDocument> lockedCollection;
         public MongoStorage()
         {
-            string dbUrl = Environment.GetEnvironmentVariable("MONGODB_URI");
+            string dbUrl = "mongodb://localhost:27017"; //temp
+
             mongoUrl = new MongoUrl(dbUrl);
             client = new MongoClient(mongoUrl);
             schamsCollection = client.GetDatabase("paint").GetCollection<BsonDocument>("schams");
@@ -38,6 +39,7 @@ namespace PaintServer.FileSystem
 
         public void saveFile(string filename,string jsonData,string clientId)
         {
+            Console.WriteLine($"saving json {jsonData}");
             BsonDocument lockDoc = new BsonDocument
             {
                 {"fileName", filename },
@@ -46,7 +48,7 @@ namespace PaintServer.FileSystem
             BsonDocument schamDoc = new BsonDocument
             {
                 {"fileName", filename },
-                {"jsonData", BsonDocument.Parse(jsonData) }
+                {"jsonData", jsonData }
             };
             FilterDefinition<BsonDocument> lockFilter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
             FilterDefinition<BsonDocument> schamFilter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
@@ -69,7 +71,7 @@ namespace PaintServer.FileSystem
             FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
             BsonDocument doc = schamsCollection.Find(filter).FirstOrDefault();
             if (doc == null) { return "does not exist"; }
-            BsonDocument jsonData = doc["jsonData"].AsBsonDocument;
+            string jsonData = doc["jsonData"].AsString;
 
             lockFile(filename, clientId);
 

@@ -21,15 +21,16 @@ namespace PaintServer
     public partial class MainWindow : Window
     {
         private FileServer fileServer;
-        private ObservableCollection<string> Filenames { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> fileNames { get; } = new ObservableCollection<string>();
         public MainWindow()
         {
             InitializeComponent();
-            FileManager.OnFilesChanged = UpdateFileNames;
-
+            FileManager.OnFilesChanged += UpdateFileNames;
+            this.DataContext = this;
 
             fileServer = new FileServer(3333);
             fileServer.Start();
+            UpdateFileNames();
         }
 
         private void SuspendButtonOnClick(object sender, RoutedEventArgs e)
@@ -39,13 +40,18 @@ namespace PaintServer
 
         private void UpdateFileNames()
         {
-            FileManager fileManager = FileManager.GetFileManager();
-            List<string> filenames = fileManager.GetAllFiles();
-            Filenames.Clear();
-            foreach(string filename in filenames)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                Filenames.Add(filename);
-            }
+                FileManager fileManager = FileManager.GetFileManager();
+                List<string> filenames = fileManager.GetAllFiles();
+                fileNames.Clear();
+                foreach (string filename in filenames)
+                {
+                    fileNames.Add(filename);
+                    Console.WriteLine(filename);
+                }
+            });
+            
         }
     }
 }

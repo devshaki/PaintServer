@@ -40,6 +40,7 @@ namespace PaintServer.FileSystem
         public void SaveFile(string filename,string jsonData,string clientId) 
         {
             mongoStorage.saveFile(filename, jsonData, clientId);
+            CloseFile(filename,clientId);
             UpdateFileNames();
         }
 

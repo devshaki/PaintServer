@@ -29,6 +29,7 @@ namespace PaintClient.networking
                 client = new TcpClient();
                 await client.ConnectAsync(ipAdress, port);
                 stream = client.GetStream();
+                await ReceiveMessages();
             }
             catch
             {
@@ -39,6 +40,11 @@ namespace PaintClient.networking
         public async Task SendHeader(string header,string filename,int size,string jsonData)
         {
             string fullheader = $"{header}:{filename}:{size}";
+            if (stream == null || client == null) 
+            {
+                Console.WriteLine("stream or client is null");
+                return; 
+            }
             try
             {
                 byte[] headerBytes = Encoding.UTF8.GetBytes(fullheader);
@@ -56,6 +62,7 @@ namespace PaintClient.networking
         public async Task SendHeader(string header, string filename)
         {
             string fullheader = $"{header}:{filename}";
+            Console.WriteLine($"sending header {fullheader}");
             try
             {
                 byte[] headerBytes = Encoding.UTF8.GetBytes(fullheader);
@@ -69,6 +76,7 @@ namespace PaintClient.networking
         }
         public async Task SendJson(string jsonData)
         {
+            Console.WriteLine($"sending {jsonData}");
             try
             {
                 byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonData);
@@ -85,6 +93,7 @@ namespace PaintClient.networking
         public async Task ReceiveMessages()
         {
             NetworkStream ns = client.GetStream();
+            Console.WriteLine("ReceiveMessages");
 
             while (client.Connected)
             {
@@ -94,12 +103,13 @@ namespace PaintClient.networking
                 {
                     string messageString = Encoding.UTF8.GetString(message, 0, bytesRead);
                     String[] metaData = messageString.Split(':');
-
+                    Console.WriteLine(messageString);
                     switch (metaData[0])
                     {
-                        case "upload":
+                        case "success":
                             {
 
+                                Console.WriteLine("got success");
                                 String filename = metaData[1];
                                 int filesize = int.Parse(metaData[2]);
                                 await ReceiveFile(filesize);

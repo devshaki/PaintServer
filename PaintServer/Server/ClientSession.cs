@@ -92,6 +92,7 @@ namespace PaintServer.Server
         public async Task SendFile(string fileName,string clientId)
         {
             string jsonData = fileManager.OpenFile(fileName, clientId);
+            Console.WriteLine($"sending {jsonData}");
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonData);
             int filesize = jsonBytes.Length;
 
@@ -99,10 +100,8 @@ namespace PaintServer.Server
 
             string header = $"success:{fileName}:{filesize}";
             byte[] headerBytes = Encoding.UTF8.GetBytes(header);
-
+            Console.WriteLine(header);
             await ns.WriteAsync(headerBytes, 0, headerBytes.Length);
-
-            await Task.Delay(100);
 
             await ns.WriteAsync(jsonBytes, 0, filesize);
         }

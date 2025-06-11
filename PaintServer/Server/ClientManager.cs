@@ -30,6 +30,7 @@ namespace PaintServer.Server
 
         public async Task AddClient(TcpClient tcpClient) 
         {
+            Console.WriteLine($"a client has been added");
             ClientSession clientSession = new ClientSession(tcpClient);
             AddClientToList(clientSession);
             await clientSession.Start();

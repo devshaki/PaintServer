@@ -14,7 +14,7 @@
             <RadioButton Content="Rectangle" Margin="5" Checked="SelectShape"/>
         </StackPanel>
         <Button Content="save" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.703,4.847" Height="27" Width="36" Click="SaveShapes"/>
-        <Button Content="load" HorizontalAlignment="Left" Margin="750,2,0,0" VerticalAlignment="Top" Height="27" Width="36"/>
+        <Button Content="load" HorizontalAlignment="Left" Margin="750,2,0,0" VerticalAlignment="Top" Height="27" Width="36" Click="RequestFile"/>
         <Canvas Margin="10,27,10,47" Name="Paint" Background="White" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" MouseMove="Canvas_MouseMove"/>
         <TextBox Name="FileName" HorizontalAlignment="Center" Margin="0,2,0,0" Text="Enter the file name" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
 

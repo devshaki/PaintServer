@@ -33,7 +33,8 @@ namespace PaintClient
             InitializeComponent();
             fileManager = FileManager.GetFileManager();
             networkClient = new NetworkClient("127.0.0.1", 3333);
-            NetworkClient.RecivedFile = LoadShapes;
+            NetworkClient.RecivedFile += LoadShapes;
+            networkClient.Connect();
 
         }
 
@@ -112,8 +113,14 @@ namespace PaintClient
             }
         }
 
+        private void RequestFile(Object sender, RoutedEventArgs e)
+        {
+            networkClient.SendHeader("get", FileName.Text);
+        }
+
         private void LoadShapes(string json)
         {
+            ClearShapes();
             List<ShapeData> shapes = fileManager.Json2List(json);
             foreach (ShapeData shape in shapes)
             {
@@ -138,8 +145,14 @@ namespace PaintClient
                 }
             }
         }
-        private void SaveShapes(string filename)
+
+        private void ClearShapes()
         {
+            Paint.Children.Clear();
+        }
+        private void SaveShapes(object sender, RoutedEventArgs e)
+        {
+            string filename = FileName.Text;
             List<ShapeData> shapes = new List<ShapeData>();
 
             foreach (UIElement element in Paint.Children)
@@ -149,6 +162,7 @@ namespace PaintClient
                     ShapeData shapeData = new ShapeData{};
                     if (shape is Line line)
                     {
+                        shapeData.Type = "Line";
                         shapeData.X1 = line.X1;
                         shapeData.Y1 = line.Y1;
                         shapeData.X2 = line.X2;
@@ -176,7 +190,9 @@ namespace PaintClient
             }
             string json = fileManager.List2Json(shapes);
             int jsonSize = Encoding.UTF8.GetByteCount(json);
-            networkClient.SendHeader("upload", FileName.Text.ToString(), jsonSize, json);
+            networkClient.SendHeader("upload", filename, jsonSize, json);
+            ClearShapes();
         }
+
     }
 }
