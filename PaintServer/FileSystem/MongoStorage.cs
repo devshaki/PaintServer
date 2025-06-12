@@ -17,7 +17,7 @@ namespace PaintServer.FileSystem
         private IMongoCollection<BsonDocument> lockedCollection;
         public MongoStorage()
         {
-            string dbUrl = "mongodb://localhost:27017"; //temp
+            string dbUrl = "mongodb://localhost:27017";
 
             mongoUrl = new MongoUrl(dbUrl);
             client = new MongoClient(mongoUrl);
@@ -40,28 +40,20 @@ namespace PaintServer.FileSystem
         public void saveFile(string filename,string jsonData,string clientId)
         {
             Console.WriteLine($"saving json {jsonData}");
-            BsonDocument lockDoc = new BsonDocument
-            {
-                {"fileName", filename },
-                {"lockedBy", clientId }
-            };
             BsonDocument schamDoc = new BsonDocument
             {
                 {"fileName", filename },
                 {"jsonData", jsonData }
             };
-            FilterDefinition<BsonDocument> lockFilter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
             FilterDefinition<BsonDocument> schamFilter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
-            lockedCollection.ReplaceOne(lockFilter,lockDoc, new ReplaceOptions {IsUpsert = true});
             schamsCollection.ReplaceOne(schamFilter,schamDoc, new ReplaceOptions { IsUpsert = true});
         }
 
         public void closeFile(string filename,string clientId)
         {
-            if (!IsFileLocked(filename, clientId)) { return; }
-            FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
-            UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Unset("lockedBy");
-            lockedCollection.UpdateOne(filter, update);
+            if (IsFileLocked(filename, clientId)) { return; }
+            FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq("fileName", filename), Builders<BsonDocument>.Filter.Eq("lockedBy", clientId));
+            lockedCollection.DeleteOne(filter);
 
         }
 
@@ -81,9 +73,13 @@ namespace PaintServer.FileSystem
 
         public void lockFile(string filename,string clientId)
         {
-            FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
-            UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set("lockedBy", clientId);
-            lockedCollection.UpdateOne(filter, update);
+            BsonDocument lockDoc = new BsonDocument
+            {
+                {"fileName", filename },
+                {"lockedBy", clientId }
+            };
+            FilterDefinition<BsonDocument> lockFilter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
+            lockedCollection.ReplaceOne(lockFilter, lockDoc, new ReplaceOptions { IsUpsert = true });
         }
         public List<string> GetAllFileNames()
         {

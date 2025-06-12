@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 
 using PaintClient.networking;
 using PaintClient.model;
+using PaintClient.utils;
 namespace PaintClient
 {
     /// <summary>
@@ -26,13 +27,13 @@ namespace PaintClient
         private ShapeType activeShape = ShapeType.Line;
         private Shape tempShape;
         private Point firstPoint;
-        private FileManager fileManager;
         private NetworkClient networkClient;
+        private readonly string ip = "127.0.0.1";
+        private readonly int port = 3333;
         public MainWindow()
         {
             InitializeComponent();
-            fileManager = FileManager.GetFileManager();
-            networkClient = new NetworkClient("127.0.0.1", 3333);
+            networkClient = new NetworkClient(ip, port);
             NetworkClient.RecivedFile += LoadShapes;
             networkClient.Connect();
 
@@ -69,14 +70,14 @@ namespace PaintClient
             return null;
         }
 
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void CanvasMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             firstPoint = e.GetPosition(Paint);
             tempShape = CreateShape(activeShape);
             Paint.Children.Add(tempShape);
         }
 
-        private void Canvas_MouseMove(object sender, MouseEventArgs e)
+        private void CanvasMouseMove(object sender, MouseEventArgs e)
         {
             if (tempShape == null || e.LeftButton != MouseButtonState.Pressed)
                 return;
@@ -85,7 +86,7 @@ namespace PaintClient
             FixShapePoints(tempShape, firstPoint, endPoint);
         }
 
-        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void CanvasMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             tempShape = null;
 
@@ -120,8 +121,24 @@ namespace PaintClient
 
         private void LoadShapes(string json)
         {
+
             ClearShapes();
-            List<ShapeData> shapes = fileManager.Json2List(json);
+            if (json == "locked")
+            {
+                TextBlock lockedErrorBox = new TextBlock
+                {
+                    Text = "File is locked",
+                    FontSize = 30,
+                    Foreground = Brushes.Red,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                Canvas.SetLeft(lockedErrorBox, Paint.ActualWidth / 2);
+                Canvas.SetTop(lockedErrorBox, Paint.ActualHeight / 2);
+
+                Paint.Children.Add(lockedErrorBox);
+            }
+            List<ShapeData> shapes = JsonUtils.Json2List(json);
             foreach (ShapeData shape in shapes)
             {
                 switch (shape.Type)
@@ -188,7 +205,7 @@ namespace PaintClient
                     shapes.Add(shapeData);
                 }
             }
-            string json = fileManager.List2Json(shapes);
+            string json = JsonUtils.List2Json(shapes);
             int jsonSize = Encoding.UTF8.GetByteCount(json);
             networkClient.SendHeader("upload", filename, jsonSize, json);
             ClearShapes();

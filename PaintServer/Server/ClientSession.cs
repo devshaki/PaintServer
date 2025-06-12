@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Threading;
-using System.Net;
 using System.Net.Sockets;
 using PaintServer.FileSystem;
+using System.IO;
 
 namespace PaintServer.Server
 {
@@ -44,11 +44,23 @@ namespace PaintServer.Server
         public async Task ReceiveMessages(CancellationTokenSource cancellationTokenSource)
         {
             NetworkStream ns = client.GetStream();
-
+            if (client == null || !client.Connected || ns == null) { return; };
+            int bytesRead = 0;
             while (client.Connected && !cancellationTokenSource.Token.IsCancellationRequested)
             {
                 byte[] message = new byte[maxHeaderSize];
-                int bytesRead = await ns.ReadAsync(message, 0, message.Length);
+                try
+                {
+                    bytesRead = await ns.ReadAsync(message, 0, message.Length);
+                }
+                catch(IOException)
+                {
+                    break;
+                }
+                catch (SocketException)
+                {
+                    return;
+                }
                 try
                 {
                     string messageString = Encoding.UTF8.GetString(message, 0, bytesRead);
@@ -59,7 +71,7 @@ namespace PaintServer.Server
                         case "upload":
                         {
 
-                            String filename = metaData[1];
+                            string filename = metaData[1];
                             int filesize = int.Parse(metaData[2]);
                             await ReceiveFile(filesize, filename, cancellationTokenSource);
                                 break;
@@ -68,13 +80,6 @@ namespace PaintServer.Server
                         {
                             string fileName = messageString.Split(':')[1];
                             await SendFile(fileName, clientId);
-                                break;
-                        }
-                        case "close:":
-                        {
-
-                            string fileName = messageString.Split(':')[1];
-                            fileManager.CloseFile(fileName, clientId);
                                 break;
                         }
                     }
@@ -91,30 +96,55 @@ namespace PaintServer.Server
 
         public async Task SendFile(string fileName,string clientId)
         {
+            NetworkStream ns = client.GetStream();
+            if (client == null|| !client.Connected || ns == null) { return; };
             string jsonData = fileManager.OpenFile(fileName, clientId);
             Console.WriteLine($"sending {jsonData}");
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonData);
             int filesize = jsonBytes.Length;
 
-            NetworkStream ns = client.GetStream();
 
             string header = $"success:{fileName}:{filesize}";
             byte[] headerBytes = Encoding.UTF8.GetBytes(header);
             Console.WriteLine(header);
-            await ns.WriteAsync(headerBytes, 0, headerBytes.Length);
-
-            await ns.WriteAsync(jsonBytes, 0, filesize);
+            try
+            {
+                await ns.WriteAsync(headerBytes, 0, headerBytes.Length);
+                await ns.WriteAsync(jsonBytes, 0, filesize);
+            }
+            catch(IOException)
+            {
+                return;
+            }
+            catch (SocketException)
+            {
+                return;
+            }
         }
+
         public async Task ReceiveFile(int fileSize, string filename,CancellationTokenSource cancellationTokenSource)
         {
             NetworkStream ns = client.GetStream();
+            if (client == null || !client.Connected || ns == null) { return; };
             byte[] fileData= new byte[fileSize];
             int totalRead = 0;
 
             while (totalRead < fileSize)
             {
-                int bytesRead = await ns.ReadAsync(fileData, totalRead, fileSize - totalRead);
-                totalRead += bytesRead;
+                try
+                {
+
+                    int bytesRead = await ns.ReadAsync(fileData, totalRead, fileSize - totalRead);
+                    totalRead += bytesRead;
+                }
+                catch(IOException)
+                {
+                    return;
+                }
+                catch (SocketException)
+                {
+                    return;
+                }
             }
             try
             {

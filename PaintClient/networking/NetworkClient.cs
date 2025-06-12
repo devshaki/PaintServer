@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using System.Net.Sockets;
 using PaintClient;
+using System.ComponentModel;
 namespace PaintClient.networking
 {
     class NetworkClient
@@ -14,7 +15,7 @@ namespace PaintClient.networking
         private NetworkStream stream;
         private int port;
         private string ipAdress;
-        private int maxHeaderSize = 100;
+        private readonly int maxHeaderSize = 100;
         public static Action<string> RecivedFile;
         public NetworkClient(string ipAdress,int port)
         {
@@ -103,7 +104,6 @@ namespace PaintClient.networking
                 {
                     string messageString = Encoding.UTF8.GetString(message, 0, bytesRead);
                     String[] metaData = messageString.Split(':');
-                    Console.WriteLine(messageString);
                     switch (metaData[0])
                     {
                         case "success":
