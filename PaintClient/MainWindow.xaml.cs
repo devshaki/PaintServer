@@ -9,10 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-
 using PaintClient.networking;
 using PaintClient.model;
 using PaintClient.utils;
@@ -25,7 +22,7 @@ namespace PaintClient
     {
         private enum ShapeType { Line, Rectangle, Circle}
         private ShapeType activeShape = ShapeType.Line;
-        private Shape tempShape;
+        private ShapeData tempShape;
         private Point firstPoint;
         private NetworkClient networkClient;
         private readonly string ip = "127.0.0.1";
@@ -35,7 +32,7 @@ namespace PaintClient
             InitializeComponent();
             networkClient = new NetworkClient(ip, port);
             NetworkClient.RecivedFile += LoadShapes;
-            networkClient.Connect();
+            _ = networkClient.Connect();
 
         }
 
@@ -56,16 +53,16 @@ namespace PaintClient
             }
 
         }
-        private Shape CreateShape(ShapeType shapeType)
+        private ShapeData CreateShape(ShapeType shapeType)
         {
             switch (shapeType)
             {
                 case ShapeType.Line:
-                    return new Line { Stroke = Brushes.Black, StrokeThickness = 3 };
+                    return new LineShape();
                 case ShapeType.Circle:
-                    return new Ellipse { Stroke = Brushes.Black, StrokeThickness = 3 };
+                    return new CircleShape();
                 case ShapeType.Rectangle:
-                    return new Rectangle { Stroke = Brushes.Black, StrokeThickness = 3 };
+                    return new RectangleShape();
             }
             return null;
         }
@@ -74,7 +71,7 @@ namespace PaintClient
         {
             firstPoint = e.GetPosition(Paint);
             tempShape = CreateShape(activeShape);
-            Paint.Children.Add(tempShape);
+            Paint.Children.Add(tempShape.GetShape());
         }
 
         private void CanvasMouseMove(object sender, MouseEventArgs e)
@@ -83,35 +80,16 @@ namespace PaintClient
                 return;
 
             Point endPoint = e.GetPosition(Paint);
-            FixShapePoints(tempShape, firstPoint, endPoint);
+            tempShape.Set1thPoint(firstPoint.X, firstPoint.Y);
+            tempShape.Set2ndPoint(endPoint.X, endPoint.Y);
+            tempShape.ConstShape();
+
         }
 
         private void CanvasMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             tempShape = null;
 
-        }
-        public void FixShapePoints(Shape shape,Point firstPoint, Point endPoint)
-        {
-            if (shape is Line line)
-            {
-                line.X1 = firstPoint.X;
-                line.Y1 = firstPoint.Y;
-                line.X2 = endPoint.X;
-                line.Y2 = endPoint.Y;
-            }
-            else if (shape is Rectangle || shape is Ellipse){
-                double x = Math.Min(firstPoint.X, endPoint.X);
-                double y = Math.Min(firstPoint.Y, endPoint.Y);
-                double height = Math.Abs(endPoint.Y - firstPoint.Y);
-                double width = Math.Abs(endPoint.X - firstPoint.X);
-
-                Canvas.SetLeft(shape, x);
-                Canvas.SetTop(shape, y);
-                shape.Height = height;
-                shape.Width = width;
-                
-            }
         }
 
         private void RequestFile(Object sender, RoutedEventArgs e)
@@ -139,27 +117,11 @@ namespace PaintClient
                 Paint.Children.Add(lockedErrorBox);
             }
             List<ShapeData> shapes = JsonUtils.Json2List(json);
+            Console.WriteLine(shapes.ToString());
             foreach (ShapeData shape in shapes)
             {
-                switch (shape.Type)
-                {
-                    case "Line":
-                        Line line = new Line { Stroke = Brushes.Black, StrokeThickness = 3, X1 = shape.X1, X2 = shape.X2, Y1 = shape.Y1, Y2 = shape.Y2 };
-                        Paint.Children.Add(line);
-                        break;
-                    case "Circle":
-                        Ellipse circle = new Ellipse { Stroke = Brushes.Black, StrokeThickness = 3, Width = shape.Width, Height = shape.Height };
-                        Canvas.SetLeft(circle,shape.Left);
-                        Canvas.SetTop(circle, shape.Top);
-                        Paint.Children.Add(circle);
-                        break;
-                    case "Rectangle":
-                        Rectangle rectangle = new Rectangle { Stroke = Brushes.Black, StrokeThickness = 3, Width = shape.Width, Height = shape.Height };
-                        Canvas.SetLeft(rectangle, shape.Left);
-                        Canvas.SetTop(rectangle, shape.Top);
-                        Paint.Children.Add(rectangle);
-                        break;
-                }
+                shape.ConstShape();
+                Paint.Children.Add(shape.GetShape());
             }
         }
 
@@ -176,33 +138,32 @@ namespace PaintClient
             {
                 if (element is Shape shape)
                 {
-                    ShapeData shapeData = new ShapeData{};
+                    ShapeData newShape = null;
+
                     if (shape is Line line)
                     {
-                        shapeData.Type = "Line";
-                        shapeData.X1 = line.X1;
-                        shapeData.Y1 = line.Y1;
-                        shapeData.X2 = line.X2;
-                        shapeData.Y2 = line.Y2;
+                        newShape = new LineShape();
+                        newShape.x1 = line.X1;
+                        newShape.x2 = line.X2;
+                        newShape.y1 = line.Y1;
+                        newShape.y2 = line.Y2;
                     }
-                    else if (shape is Rectangle)
+                    else if (shape is Rectangle || shape is Ellipse)
                     {
-                        shapeData.Type = "Rectangle";
-                        shapeData.Width = shape.Width;
-                        shapeData.Height = shape.Height;
-                        shapeData.Left = Canvas.GetLeft(shape);
-                        shapeData.Top = Canvas.GetTop(shape);
+                        if (shape is Rectangle)
+                        {
+                            newShape = new RectangleShape();
 
+                        }
+                        else if (shape is Ellipse)
+                        {
+                            newShape = new CircleShape();
+                        }
+                        newShape.Set1thPoint(shape.Width, shape.Height);
+                        newShape.Set2ndPoint(Canvas.GetLeft(shape), Canvas.GetTop(shape));
                     }
-                    else if (shape is Ellipse)
-                    {
-                        shapeData.Type = "Circle";
-                        shapeData.Width = shape.Width;
-                        shapeData.Height = shape.Height;
-                        shapeData.Left = Canvas.GetLeft(shape);
-                        shapeData.Top = Canvas.GetTop(shape);
-                    }
-                    shapes.Add(shapeData);
+                    newShape.ConstShape();
+                    shapes.Add(newShape);
                 }
             }
             string json = JsonUtils.List2Json(shapes);

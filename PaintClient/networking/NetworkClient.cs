@@ -30,6 +30,7 @@ namespace PaintClient.networking
                 client = new TcpClient();
                 await client.ConnectAsync(ipAdress, port);
                 stream = client.GetStream();
+                System.Diagnostics.Debug.WriteLine("connected to server");
                 await ReceiveMessages();
             }
             catch
@@ -109,7 +110,7 @@ namespace PaintClient.networking
                         case "success":
                             {
 
-                                Console.WriteLine("got success");
+                                System.Diagnostics.Debug.WriteLine("got success");
                                 String filename = metaData[1];
                                 int filesize = int.Parse(metaData[2]);
                                 await ReceiveFile(filesize);

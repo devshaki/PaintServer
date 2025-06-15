@@ -30,6 +30,7 @@ namespace PaintServer
 
             fileServer = new FileServer(3333);
             fileServer.Start();
+
             UpdateFileNames();
         }
 

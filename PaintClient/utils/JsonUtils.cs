@@ -12,14 +12,22 @@ namespace PaintClient.utils
     {
         public static string List2Json(List<ShapeData> list)
         {
-            string json = JsonConvert.SerializeObject(list, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(list, Formatting.Indented, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
             return json;
         }
 
         public static List<ShapeData> Json2List(string json)
         {
-            List<ShapeData> list = JsonConvert.DeserializeObject<List<ShapeData>>(json);
-            return list;
+            List<ShapeData> list = JsonConvert.DeserializeObject<List<ShapeData>>(json, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
+            System.Diagnostics.Debug.WriteLine(list[0].ToString());
+            return list ?? new List<ShapeData>();
+            
         }
     }
 }
