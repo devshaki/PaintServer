@@ -1,0 +1,24 @@
+﻿<Window x:Class="PaintClient.FileBrowserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PaintClient"
+        mc:Ignorable="d"
+        Title="FileBrowserWindow" Height="450" Width="800">
+    <Grid>
+        <Label Content="בחירת קובץ" HorizontalAlignment="Left" Margin="359,10,0,0" VerticalAlignment="Top" Height="50" Width="130" FontSize="20" BorderThickness="0" FontWeight="Bold"/>
+        <Label Content=":קבצי סקיצה קיימים" HorizontalAlignment="Left" Margin="597,59,0,0" VerticalAlignment="Top" Width="185" FontSize="18" FontWeight="Bold"/>
+        <Button Content="חדש" HorizontalAlignment="Left" Margin="359,347,0,0" VerticalAlignment="Top" Width="100" Height="40" Click="NewButtonOnClick"/>
+        <ListBox x:Name="Filelist" SelectionChanged="FilelistSelectionChanged" ItemsSource="{Binding fileNames}" HorizontalAlignment="right" Height="244" Margin="10,98,0,0" VerticalAlignment="Top" Width="772" FlowDirection="RightToLeft">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Black" BorderThickness="1" Background="#585759">
+                        <TextBlock Text="{Binding}" FontSize="20" Foreground="MintCream"/>
+                    </Border>
+
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>

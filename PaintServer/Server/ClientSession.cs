@@ -8,6 +8,7 @@ using System.Threading;
 using System.Net.Sockets;
 using PaintServer.FileSystem;
 using System.IO;
+using PaintClient.utils;
 
 namespace PaintServer.Server
 {
@@ -37,7 +38,7 @@ namespace PaintServer.Server
 
         public void Stop()
         {
-            client.Close();
+//          client.Close();
             cancellationTokenSource.Cancel();
         }
 
@@ -65,7 +66,7 @@ namespace PaintServer.Server
                 {
                     string messageString = Encoding.UTF8.GetString(message, 0, bytesRead);
                     String[] metaData = messageString.Split(':');
-
+                    System.Diagnostics.Debug.WriteLine(messageString);
                     switch (metaData[0])
                     {
                         case "upload":
@@ -79,8 +80,18 @@ namespace PaintServer.Server
                         case "get":
                         {
                             string fileName = messageString.Split(':')[1];
-                            await SendFile(fileName, clientId);
+                            string fileJson = await GetFileJson(fileName, clientId);
+                            await SendFile(fileName, fileJson, "success");
                                 break;
+                        }
+                        case "getAll":
+                        {
+
+                            List<string> fileNames = fileManager.GetAllFiles();
+                            string fileNamesJson = JsonUtils.List2Json(fileNames);
+                            await SendFile("all", fileNamesJson, "success");
+                                break;
+
                         }
                     }
                 }
@@ -91,20 +102,28 @@ namespace PaintServer.Server
                 
 
             }
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                System.Diagnostics.Debug.WriteLine("suspanded");
+            }
 
         }
-
-        public async Task SendFile(string fileName,string clientId)
+        public async Task<string> GetFileJson(string fileName, string clientId)
         {
             NetworkStream ns = client.GetStream();
-            if (client == null|| !client.Connected || ns == null) { return; };
+            if (client == null || !client.Connected || ns == null) { return ""; };
             string jsonData = fileManager.OpenFile(fileName, clientId);
+            return jsonData;
+        }
+        public async Task SendFile(string fileName,string jsonData,string headerType)
+        {
+            NetworkStream ns = client.GetStream();
             Console.WriteLine($"sending {jsonData}");
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonData);
             int filesize = jsonBytes.Length;
 
 
-            string header = $"success:{fileName}:{filesize}";
+            string header = $"{headerType}:{fileName}:{filesize}";
             byte[] headerBytes = Encoding.UTF8.GetBytes(header);
             Console.WriteLine(header);
             try

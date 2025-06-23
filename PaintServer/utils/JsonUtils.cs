@@ -5,12 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
-using PaintClient.model;
 namespace PaintClient.utils
 {
     static class JsonUtils
     {
-        public static string List2Json(List<ShapeData> list)
+        public static string List2Json(List<string> list)
         {
             string json = JsonConvert.SerializeObject(list, Formatting.Indented, new JsonSerializerSettings
             {
@@ -19,14 +18,14 @@ namespace PaintClient.utils
             return json;
         }
 
-        public static List<T> Json2List<T>(string json)
+        public static List<string> Json2List(string json)
         {
-            List<T> list = JsonConvert.DeserializeObject<List<T>>(json, new JsonSerializerSettings
+            List<string> list = JsonConvert.DeserializeObject<List<string>>(json, new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto
             });
             System.Diagnostics.Debug.WriteLine(list[0].ToString());
-            return list ?? new List<T>();
+            return list ?? new List<string>();
             
         }
     }

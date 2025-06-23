@@ -20,6 +20,7 @@ namespace PaintClient
     /// </summary> 
     public partial class MainWindow : Window
     {
+        public FileBrowserWindow fileBrowserWindow;
         private enum ShapeType { Line, Rectangle, Circle}
         private ShapeType activeShape = ShapeType.Line;
         private ShapeData tempShape;
@@ -30,9 +31,11 @@ namespace PaintClient
         public MainWindow()
         {
             InitializeComponent();
-            networkClient = new NetworkClient(ip, port);
-            NetworkClient.RecivedFile += LoadShapes;
+            networkClient = NetworkClient.GetNetworkClient(ip, port);
+            NetworkClient.RecivedFile = LoadShapes;
             _ = networkClient.Connect();
+            fileBrowserWindow = new FileBrowserWindow();
+            fileBrowserWindow.mainWindow = this;
 
         }
 
@@ -92,9 +95,19 @@ namespace PaintClient
 
         }
 
+        private void LoadButton(Object sender, RoutedEventArgs e)
+        {
+            fileBrowserWindow.Show();
+            fileBrowserWindow.loadNames();
+            this.Hide();
+        }
         private void RequestFile(Object sender, RoutedEventArgs e)
         {
-            networkClient.SendHeader("get", FileName.Text);
+            RequestFile(FileName.Text);
+        }
+        public void RequestFile(string fileName)
+        {
+            _ = networkClient.SendHeader("get", fileName);
         }
 
         private void LoadShapes(string json)
@@ -116,7 +129,7 @@ namespace PaintClient
 
                 Paint.Children.Add(lockedErrorBox);
             }
-            List<ShapeData> shapes = JsonUtils.Json2List(json);
+            List<ShapeData> shapes = JsonUtils.Json2List<ShapeData>(json);
             Console.WriteLine(shapes.ToString());
             foreach (ShapeData shape in shapes)
             {
@@ -125,7 +138,7 @@ namespace PaintClient
             }
         }
 
-        private void ClearShapes()
+        public void ClearShapes()
         {
             Paint.Children.Clear();
         }

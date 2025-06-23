@@ -11,16 +11,27 @@ namespace PaintClient.networking
 {
     class NetworkClient
     {
-        TcpClient client;
+        public static NetworkClient networkClient;
+        public TcpClient client;
         private NetworkStream stream;
         private int port;
         private string ipAdress;
         private readonly int maxHeaderSize = 100;
         public static Action<string> RecivedFile;
-        public NetworkClient(string ipAdress,int port)
+        public static Action<string> RecivedFiles;
+        private NetworkClient(string ipAdress,int port)
         {
             this.port = port;
             this.ipAdress = ipAdress;
+        }
+
+        public static NetworkClient GetNetworkClient(string ipAdress, int port)
+        {
+            if(networkClient == null)
+            {
+                networkClient = new NetworkClient(ipAdress, port);
+            }
+            return networkClient;
         }
 
         public async Task Connect()
@@ -64,7 +75,8 @@ namespace PaintClient.networking
         public async Task SendHeader(string header, string filename)
         {
             string fullheader = $"{header}:{filename}";
-            Console.WriteLine($"sending header {fullheader}");
+            System.Diagnostics.Debug.WriteLine($"sending header {fullheader}");
+            if (stream == null) { return; }
             try
             {
                 byte[] headerBytes = Encoding.UTF8.GetBytes(fullheader);
@@ -113,7 +125,7 @@ namespace PaintClient.networking
                                 System.Diagnostics.Debug.WriteLine("got success");
                                 String filename = metaData[1];
                                 int filesize = int.Parse(metaData[2]);
-                                await ReceiveFile(filesize);
+                                await ReceiveFile(filesize,filename);
                                 break;
                             }
                     }
@@ -129,7 +141,7 @@ namespace PaintClient.networking
         }
 
 
-        public async Task ReceiveFile(int fileSize)
+        public async Task ReceiveFile(int fileSize,string fileName)
         {
             NetworkStream ns = client.GetStream();
             byte[] fileData = new byte[fileSize];
@@ -143,7 +155,18 @@ namespace PaintClient.networking
             try
             {
                 string jsonData = Encoding.UTF8.GetString(fileData);
-                RecivedFile(jsonData);
+                System.Diagnostics.Debug.WriteLine(jsonData);
+                System.Diagnostics.Debug.WriteLine("----------------");
+                System.Diagnostics.Debug.WriteLine(fileName);
+                if(fileName == "all")
+                {
+                    RecivedFiles(jsonData);
+                }
+                else
+                {
+                    RecivedFile(jsonData);
+                }
+
             }
             catch
             {
