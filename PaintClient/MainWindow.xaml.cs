@@ -92,7 +92,6 @@ namespace PaintClient
         private void CanvasMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             tempShape = null;
-
         }
 
         private void LoadButton(Object sender, RoutedEventArgs e)

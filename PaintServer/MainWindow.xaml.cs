@@ -16,43 +16,34 @@ using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 using PaintServer.Server;
 using PaintServer.FileSystem;
+using PaintServer.MVC;
 namespace PaintServer
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IServerView
     {
-        private FileServer fileServer;
+        public event Action Suspand;
         public ObservableCollection<string> fileNames { get; } = new ObservableCollection<string>();
         public MainWindow()
         {
             InitializeComponent();
-            FileManager.OnFilesChanged += UpdateFileNames;
             this.DataContext = this;
-
-            fileServer = new FileServer(3333);
-            fileServer.Start();
-
-            UpdateFileNames();
         }
 
         private void SuspendButtonOnClick(object sender, RoutedEventArgs e)
         {
-            fileServer.Suspend();   
+            Suspand?.Invoke();
         }
 
-        private void UpdateFileNames()
+        public void UpdateFileNames(List<string> filenames)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                FileManager fileManager = FileManager.GetFileManager();
-                List<string> filenames = fileManager.GetAllFiles();
                 fileNames.Clear();
                 foreach (string filename in filenames)
                 {
                     fileNames.Add(filename);
-                    Console.WriteLine(filename);
                 }
             });
-            
         }
     }
 }

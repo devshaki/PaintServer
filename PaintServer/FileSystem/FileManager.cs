@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PaintServer.MVC;
 namespace PaintServer.FileSystem
 {
-    class FileManager
+    class FileManager : IServerModel
     {
         private MongoStorage mongoStorage;
         private static FileManager fileManager;
-        public static Action OnFilesChanged;
+        public event Action OnFileChange;
 
 
         private FileManager() { mongoStorage = new MongoStorage(); }
@@ -27,10 +28,7 @@ namespace PaintServer.FileSystem
 
         private void UpdateFileNames()
         {
-          if (OnFilesChanged != null)
-            {
-                OnFilesChanged.Invoke();
-            }
+            OnFileChange?.Invoke();
         }
         public string OpenFile(string filename,string clientId)
         {

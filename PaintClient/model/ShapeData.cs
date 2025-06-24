@@ -25,7 +25,5 @@ namespace PaintClient.model
 
         public abstract void ConstShape();
         public abstract Shape GetShape();
-
-
     }
 }

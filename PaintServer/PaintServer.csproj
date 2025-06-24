@@ -267,6 +267,9 @@
     </ApplicationDefinition>
     <Compile Include="FileSystem\FileManager.cs" />
     <Compile Include="FileSystem\MongoStorage.cs" />
+    <Compile Include="MVC\IServerModel.cs" />
+    <Compile Include="MVC\IServerView.cs" />
+    <Compile Include="MVC\ServerController.cs" />
     <Compile Include="Server\ClientManager.cs" />
     <Compile Include="Server\ClientSession.cs" />
     <Compile Include="Server\FileServer.cs" />
