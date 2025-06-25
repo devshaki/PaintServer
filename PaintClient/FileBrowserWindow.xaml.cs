@@ -50,6 +50,7 @@ namespace PaintClient
         private void FilelistSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             mainWindow.Show();
+            mainWindow.ClearShapes();
             if (Filelist.SelectedItem is String fileName)
             {
                mainWindow.RequestFile(fileName);

@@ -38,7 +38,8 @@ namespace PaintServer.Server
 
         public void Stop()
         {
-//          client.Close();
+            //          client.Close();
+            _ = SendHeader("suspanded:");
             cancellationTokenSource.Cancel();
         }
 
@@ -62,6 +63,7 @@ namespace PaintServer.Server
                 {
                     return;
                 }
+                if (cancellationTokenSource.Token.IsCancellationRequested) { return; }
                 try
                 {
                     string messageString = Encoding.UTF8.GetString(message, 0, bytesRead);
@@ -114,6 +116,13 @@ namespace PaintServer.Server
             if (client == null || !client.Connected || ns == null) { return ""; };
             string jsonData = fileManager.OpenFile(fileName, clientId);
             return jsonData;
+        }
+
+        public async Task SendHeader(string header)
+        {
+            NetworkStream ns = client.GetStream();
+            byte[] headerBytes = Encoding.UTF8.GetBytes(header);
+            await ns.WriteAsync(headerBytes, 0, headerBytes.Length);
         }
         public async Task SendFile(string fileName,string jsonData,string headerType)
         {

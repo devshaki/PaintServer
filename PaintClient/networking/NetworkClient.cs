@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using PaintClient;
 using System.ComponentModel;
+using System.Windows;
+
 namespace PaintClient.networking
 {
     class NetworkClient
@@ -126,6 +128,11 @@ namespace PaintClient.networking
                                 String filename = metaData[1];
                                 int filesize = int.Parse(metaData[2]);
                                 await ReceiveFile(filesize,filename);
+                                break;
+                            }
+                        case "suspanded":
+                            {
+                                MessageBox.Show("You are now suspanded", "suspanded");
                                 break;
                             }
                     }
