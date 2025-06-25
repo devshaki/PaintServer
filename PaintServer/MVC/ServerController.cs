@@ -27,6 +27,7 @@ namespace PaintServer.MVC
         public void Start()
         {
             _ = fileServer.Start();
+            UpdateFileNames();
         }
 
         public void OnSuspandEvent()

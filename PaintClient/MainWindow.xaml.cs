@@ -21,7 +21,6 @@ namespace PaintClient
     public partial class MainWindow : Window
     {
         public FileBrowserWindow fileBrowserWindow;
-        private enum ShapeType { Line, Rectangle, Circle}
         private ShapeType activeShape = ShapeType.Line;
         private ShapeData tempShape;
         private Point firstPoint;
@@ -42,18 +41,7 @@ namespace PaintClient
         private void SelectShape(object sender,RoutedEventArgs arg)
         {
             string shape = (string)((System.Windows.Controls.RadioButton)sender).Content;
-            switch (shape)
-            {
-                case "Line":
-                    activeShape = ShapeType.Line;
-                    break;
-                case "Circle":
-                    activeShape = ShapeType.Circle;
-                    break;
-                case "Rectangle":
-                    activeShape = ShapeType.Rectangle;
-                    break;
-            }
+            activeShape = Enum.Parse<ShapeType>(shape);
 
         }
         private ShapeData CreateShape(ShapeType shapeType)
@@ -127,6 +115,7 @@ namespace PaintClient
                 Canvas.SetTop(lockedErrorBox, Paint.ActualHeight / 2);
 
                 Paint.Children.Add(lockedErrorBox);
+                return;
             }
             List<ShapeData> shapes = JsonUtils.Json2List<ShapeData>(json);
             Console.WriteLine(shapes.ToString());
@@ -180,7 +169,7 @@ namespace PaintClient
             }
             string json = JsonUtils.List2Json(shapes);
             int jsonSize = Encoding.UTF8.GetByteCount(json);
-            networkClient.SendHeader("upload", filename, jsonSize, json);
+            _ = networkClient.SendHeader("upload", filename, jsonSize, json);
             ClearShapes();
         }
 
