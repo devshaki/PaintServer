@@ -37,7 +37,7 @@ namespace PaintServer.FileSystem
             return false;
         }
 
-        public void saveFile(string filename,string jsonData,string clientId)
+        public void SaveFile(string filename,string jsonData,string clientId)
         {
             Console.WriteLine($"saving json {jsonData}");
             BsonDocument schamDoc = new BsonDocument
@@ -49,7 +49,7 @@ namespace PaintServer.FileSystem
             schamsCollection.ReplaceOne(schamFilter,schamDoc, new ReplaceOptions { IsUpsert = true});
         }
 
-        public void closeFile(string filename,string clientId)
+        public void CloseFile(string filename,string clientId)
         {
             if (IsFileLocked(filename, clientId)) { return; }
             FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq("fileName", filename), Builders<BsonDocument>.Filter.Eq("lockedBy", clientId));
@@ -57,7 +57,7 @@ namespace PaintServer.FileSystem
 
         }
 
-        public string openFile(string filename,string clientId)
+        public string OpenFile(string filename,string clientId)
         {
             if (IsFileLocked(filename,clientId)) { return "locked"; }
             FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
@@ -65,13 +65,13 @@ namespace PaintServer.FileSystem
             if (doc == null) { return "does not exist"; }
             string jsonData = doc["jsonData"].AsString;
 
-            lockFile(filename, clientId);
+            LockFile(filename, clientId);
 
             return jsonData.ToString();
 
         }
 
-        public void lockFile(string filename,string clientId)
+        public void LockFile(string filename,string clientId)
         {
             BsonDocument lockDoc = new BsonDocument
             {

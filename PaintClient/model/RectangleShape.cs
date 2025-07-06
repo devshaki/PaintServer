@@ -11,7 +11,7 @@ namespace PaintClient.model
     class RectangleShape : ShapeData
     {
         private Rectangle rectangle;
-
+            
         public RectangleShape()
         {
             rectangle = new Rectangle { Stroke = Brushes.Black, StrokeThickness = 3 };

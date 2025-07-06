@@ -20,7 +20,7 @@ namespace PaintServer
         {
             base.OnStartup(e);
             MainWindow mainWindow = new MainWindow();
-            FileManager fileManager = FileManager.GetFileManager();
+            FileManager fileManager = FileManager.GetFileManager();  //move to controller
             FileServer fileServer = new FileServer(3333);
 
             ServerController serverController = new ServerController(mainWindow, fileManager, fileServer);

@@ -265,14 +265,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="FileSystem\FileManager.cs" />
-    <Compile Include="FileSystem\MongoStorage.cs" />
-    <Compile Include="MVC\IServerModel.cs" />
-    <Compile Include="MVC\IServerView.cs" />
-    <Compile Include="MVC\ServerController.cs" />
-    <Compile Include="Server\ClientManager.cs" />
-    <Compile Include="Server\ClientSession.cs" />
-    <Compile Include="Server\FileServer.cs" />
+    <Compile Include="filesystem\FileManager.cs" />
+    <Compile Include="filesystem\MongoStorage.cs" />
+    <Compile Include="model\IServerModel.cs" />
+    <Compile Include="model\IServerView.cs" />
+    <Compile Include="ServerController.cs" />
+    <Compile Include="server\ClientManager.cs" />
+    <Compile Include="server\ClientSession.cs" />
+    <Compile Include="server\FileServer.cs" />
     <Compile Include="utils\JsonUtils.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

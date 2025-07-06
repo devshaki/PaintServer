@@ -32,19 +32,19 @@ namespace PaintServer.FileSystem
         }
         public string OpenFile(string filename,string clientId)
         {
-            return mongoStorage.openFile(filename, clientId);
+            return mongoStorage.OpenFile(filename, clientId);
         }
 
         public void SaveFile(string filename,string jsonData,string clientId) 
         {
-            mongoStorage.saveFile(filename, jsonData, clientId);
+            mongoStorage.SaveFile(filename, jsonData, clientId);
             CloseFile(filename,clientId);
             UpdateFileNames();
         }
 
         public void CloseFile(string filename,string clientId)
         {
-            mongoStorage.closeFile(filename, clientId);
+            mongoStorage.CloseFile(filename, clientId);
         }
 
         public List<string> GetAllFiles()
