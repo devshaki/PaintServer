@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using PaintServer.MVC;
+using PaintServer.Server;
+
 namespace PaintServer.FileSystem
 {
     class FileManager : IServerModel
@@ -17,6 +19,15 @@ namespace PaintServer.FileSystem
         private FileManager() { mongoStorage = new MongoStorage(); }
 
 
+        public void AddClient(ClientSession client)
+        {
+            mongoStorage.AddClient(client);
+        }
+
+        public List<ClientSession> GetClients()
+        {
+            return mongoStorage.GetAllClients();
+        }
         public static FileManager GetFileManager()
         {
             if (fileManager == null)

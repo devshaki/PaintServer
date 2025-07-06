@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using PaintServer.Server;
 
 namespace PaintServer.FileSystem
 {
@@ -23,6 +25,8 @@ namespace PaintServer.FileSystem
             client = new MongoClient(mongoUrl);
             schamsCollection = client.GetDatabase("paint").GetCollection<BsonDocument>("schams");
             lockedCollection = client.GetDatabase("paint").GetCollection<BsonDocument>("locks");
+            lockedCollection = client.GetDatabase("paint").GetCollection<BsonDocument>("clients");
+            
         }
 
         public bool IsFileLocked(string filename,string clientId)
@@ -48,7 +52,30 @@ namespace PaintServer.FileSystem
             FilterDefinition<BsonDocument> schamFilter = Builders<BsonDocument>.Filter.Eq("fileName", filename);
             schamsCollection.ReplaceOne(schamFilter,schamDoc, new ReplaceOptions { IsUpsert = true});
         }
-
+        
+        public void AddClient(ClientSession client)
+        {
+            BsonDocument clientDoc = client.ToBsonDocument();
+            FilterDefinition<BsonDocument> clientFilter = Builders<BsonDocument>.Filter.Eq("clientId", client);
+            lockedCollection.ReplaceOne(clientFilter, clientDoc, new ReplaceOptions { IsUpsert = true });
+        }
+        public void RemoveClient(string client)
+        {
+            FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Eq("clientId", client);
+            lockedCollection.DeleteOne(filter);
+        }
+        public List<ClientSession> GetAllClients()
+        {
+            ProjectionDefinition<BsonDocument> projection = Builders<BsonDocument>.Projection.Exclude("_id");
+            List<BsonDocument> clientDocs = lockedCollection.Find(new BsonDocument()).Project(projection).ToList();
+            List<ClientSession> clients = new List<ClientSession>();
+            foreach (BsonDocument doc in clientDocs)
+            {
+                ClientSession client = BsonSerializer.Deserialize<ClientSession>(doc);
+                clients.Add(client);
+            }
+            return clients;
+        }
         public void CloseFile(string filename,string clientId)
         {
             if (IsFileLocked(filename, clientId)) { return; }

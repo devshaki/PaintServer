@@ -40,7 +40,10 @@ namespace PaintServer.Server
         {
             //          client.Close();
             _ = SendHeader("suspanded:");
-            cancellationTokenSource.Cancel();
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+            }
         }
 
         public async Task ReceiveMessages(CancellationTokenSource cancellationTokenSource)

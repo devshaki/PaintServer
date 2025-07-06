@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using PaintServer.FileSystem;
 
 namespace PaintServer.Server
 {
     class ClientManager
     {
-        private List<ClientSession> clients;
+        private FileManager fileManager;
         private readonly Object listlock = new Object();
-        private ClientManager() { clients = new List<ClientSession>(); }
+        private ClientManager() { fileManager = FileManager.GetFileManager(); }
 
         // singleton design pattern
         private static ClientManager clientManager;
@@ -38,6 +39,7 @@ namespace PaintServer.Server
 
         public void SuspandClients()
         {
+            List<ClientSession> clients = fileManager.GetClients();
             foreach (ClientSession client in clients)
             {
                 client.Stop();
@@ -47,7 +49,7 @@ namespace PaintServer.Server
         {
             lock (listlock)
             {
-                clients.Add(clientSession);
+                fileManager.AddClient(clientSession);
             }
 
         }
